@@ -1,0 +1,8 @@
+[console_scripts]
+generate_sampling_dataset = neural_rrt_planner.learning.generate_sampling_dataset:main
+informed_rrt_star_node = neural_rrt_planner.informed_rrt_star_node:main
+informed_rrt_star_test = neural_rrt_planner.planners.test_informed_rrt_star:main
+neural_rrt_star_node = neural_rrt_planner.neural_rrt_star_node:main
+neural_rrt_star_node_v2 = neural_rrt_planner.neural_rrt_star_node_v2:main
+rrt_star = neural_rrt_planner.planners.test_rrt_star:main
+rrt_star_node = neural_rrt_planner.rrt_star_node:main
