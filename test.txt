@@ -3,3 +3,5 @@ first commit test
 write on mac
 
 write on Ubuntu
+
+remove ds_store
