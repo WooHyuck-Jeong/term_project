@@ -7,9 +7,9 @@ from glob import glob
 dataDir = "/Users/woohyuck/Documents/02_workspace/04_Lecture/01_Mobility/MyProject/term_project/benchmark"
 dataList : list[str] = glob(os.path.join(dataDir, "*.csv"))
 
-for i in range(len(dataList)):
-    print(i)
-    print(dataList[i])
+# for i in range(len(dataList)):
+#     print(i)
+#     print(dataList[i])
 
 rawDataIdx = [2, 4, 0, 1]
 rawDataList = [dataList[i] for i in rawDataIdx]
@@ -63,7 +63,7 @@ neural_rrt_v2.plot(kind= "line", x= "run", y= "elapsed_sec", title= "Elapsed tim
 for i in range(4):
     ax[i].legend(loc= 'upper right')
 plt.tight_layout()
-# plt.show()
+plt.show()
 
-fig.savefig("Benchmark_Compare_v2.png", dpi= 500)
-plt.close()
+# fig.savefig("Benchmark_Compare_v2.png", dpi= 500)
+# plt.close()
