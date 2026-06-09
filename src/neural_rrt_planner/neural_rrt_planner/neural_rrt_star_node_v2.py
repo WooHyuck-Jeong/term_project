@@ -36,8 +36,6 @@ class NeuralRRTStarNodeV2(Node):
 
         self.iteration = 0
         self.max_iter = MAP_CONFIG["rrt_params"]["max_iter"]
-        self.extra_iter = MAP_CONFIG["rrt_params"]["extra_iter"]  # ← 추가
-        self.extra_iter_count = 0                                  # ← 추가
         self.planning_finished = False
 
         self.get_logger().info("Neural-Guided RRT* v2 animated planning started.")
@@ -55,17 +53,11 @@ class NeuralRRTStarNodeV2(Node):
             self.planner.expand_once()
             self.iteration += 1
 
-            # 경로 미발견: max_iter까지 계속
-            if self.planner.best_goal_node is None:
-                if self.iteration >= self.max_iter:
-                    self.planning_finished = True
+            if self.iteration >= self.max_iter:
+                self.planning_finished = True
+                if self.planner.best_goal_node is None:
                     self.get_logger().warn("Path not found within max_iter.")
-
-            # 경로 발견: extra_iter 동안 추가 개선
-            else:
-                self.extra_iter_count += 1
-                if self.extra_iter_count >= self.extra_iter:
-                    self.planning_finished = True
+                else:
                     self.get_logger().info(
                         f"Planning finished. "
                         f"Cost: {self.planner.best_goal_node.cost:.3f} | "
@@ -331,8 +323,8 @@ def main(args=None):
         pass
     finally:
         node.destroy_node()
-        rclpy.shutdown()
-
+        if rclpy.ok():
+            rclpy.shutdown()
 
 if __name__ == "__main__":
     main()

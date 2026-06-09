@@ -12,23 +12,23 @@ def generate_launch_description():
     rviz_config_path = os.path.join(
         package_share_dir,
         'rviz',
-        # 'rrt_star.rviz',
-        'informed_rrt_star.rviz'
+        'rrt_star.rviz',
+        # 'informed_rrt_star.rviz'
     )
 
-    # rrt_star_node = Node(
-    #     package='neural_rrt_planner',
-    #     executable='rrt_star_node',
-    #     name='rrt_star_node',
-    #     output='screen'
-    # )
-    
-    informed_rrt_star_node = Node(
-        package= 'neural_rrt_planner',
-        executable= 'informed_rrt_star_node',
-        name= 'informed_rrt_star_node',
-        output= 'screen'
+    rrt_star_node = Node(
+        package='neural_rrt_planner',
+        executable='rrt_star_node',
+        name='rrt_star_node',
+        output='screen'
     )
+    
+    # informed_rrt_star_node = Node(
+    #     package= 'neural_rrt_planner',
+    #     executable= 'informed_rrt_star_node',
+    #     name= 'informed_rrt_star_node',
+    #     output= 'screen'
+    # )
 
     rviz_node = Node(
         package='rviz2',
@@ -39,7 +39,7 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        # rrt_star_node,
-        informed_rrt_star_node,
+        rrt_star_node,
+        # informed_rrt_star_node,
         rviz_node
     ])

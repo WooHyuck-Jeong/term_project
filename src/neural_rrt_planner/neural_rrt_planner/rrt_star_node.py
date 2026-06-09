@@ -27,8 +27,6 @@ class RRTStarNode(Node):
 
         self.iteration = 0
         self.max_iter = MAP_CONFIG["rrt_params"]["max_iter"]
-        self.extra_iter = MAP_CONFIG["rrt_params"]["extra_iter"]  # ← 추가
-        self.extra_iter_count = 0                                  # ← 추가
         self.planning_finished = False
 
         self.get_logger().info("RRT* animated planning started.")
@@ -43,17 +41,11 @@ class RRTStarNode(Node):
             self.planner.expand_once()
             self.iteration += 1
 
-            # 경로 미발견: max_iter까지 계속
-            if self.planner.best_goal_node is None:
-                if self.iteration >= self.max_iter:
-                    self.planning_finished = True
+            if self.iteration >= self.max_iter:
+                self.planning_finished = True
+                if self.planner.best_goal_node is None:
                     self.get_logger().warn("Path not found within max_iter.")
-
-            # 경로 발견: extra_iter 동안 추가 개선
-            else:
-                self.extra_iter_count += 1
-                if self.extra_iter_count >= self.extra_iter:
-                    self.planning_finished = True
+                else:
                     self.get_logger().info(
                         f"Planning finished. "
                         f"Cost: {self.planner.best_goal_node.cost:.3f} | "
@@ -244,39 +236,39 @@ class RRTStarNode(Node):
 
         return marker
 
-    def create_iteration_text_marker(self, marker_id):
-        marker = Marker()
-        marker.header.frame_id = self.frame_id
-        marker.header.stamp = self.get_clock().now().to_msg()
-        marker.ns = "iteration_text"
-        marker.id = marker_id
-        marker.type = Marker.TEXT_VIEW_FACING
-        marker.action = Marker.ADD
+    # def create_iteration_text_marker(self, marker_id):
+    #     marker = Marker()
+    #     marker.header.frame_id = self.frame_id
+    #     marker.header.stamp = self.get_clock().now().to_msg()
+    #     marker.ns = "iteration_text"
+    #     marker.id = marker_id
+    #     marker.type = Marker.TEXT_VIEW_FACING
+    #     marker.action = Marker.ADD
 
-        marker.pose.position.x = 0.2
-        marker.pose.position.y = 0.1
-        marker.pose.position.z = 0.2
-        marker.pose.orientation.w = 1.0
+    #     marker.pose.position.x = 0.2
+    #     marker.pose.position.y = 0.1
+    #     marker.pose.position.z = 0.2
+    #     marker.pose.orientation.w = 1.0
 
-        marker.scale.z = 0.18
+    #     marker.scale.z = 0.18
 
-        marker.color.r = 1.0
-        marker.color.g = 1.0
-        marker.color.b = 1.0
-        marker.color.a = 1.0
+    #     marker.color.r = 1.0
+    #     marker.color.g = 1.0
+    #     marker.color.b = 1.0
+    #     marker.color.a = 1.0
 
-        if self.planner.best_goal_node is None:
-            best_cost = "None"
-        else:
-            best_cost = f"{self.planner.best_goal_node.cost:.3f}"
+    #     if self.planner.best_goal_node is None:
+    #         best_cost = "None"
+    #     else:
+    #         best_cost = f"{self.planner.best_goal_node.cost:.3f}"
 
-        marker.text = (
-            f"RRT* | Iter: {self.iteration} | "
-            f"Nodes: {len(self.planner.nodes)} | "
-            f"Best cost: {best_cost}"
-        )
+    #     marker.text = (
+    #         f"RRT* | Iter: {self.iteration} | "
+    #         f"Nodes: {len(self.planner.nodes)} | "
+    #         f"Best cost: {best_cost}"
+    #     )
 
-        return marker
+    #     return marker
 
     def publish_markers(self):
         marker_array = MarkerArray()
@@ -322,9 +314,9 @@ class RRTStarNode(Node):
             marker_array.markers.append(marker)
             marker_id += 1
 
-        marker_array.markers.append(
-            self.create_iteration_text_marker(marker_id)
-        )
+        # marker_array.markers.append(
+        #     self.create_iteration_text_marker(marker_id)
+        # )
 
         self.marker_pub.publish(marker_array)
 
@@ -340,6 +332,7 @@ def main(args=None):
         pass
     finally:
         node.destroy_node()
+        # if rclpy.ok():
         rclpy.shutdown()
 
 
