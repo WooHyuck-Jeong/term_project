@@ -51,6 +51,10 @@ class RRTStarNode(Node):
                         f"Cost: {self.planner.best_goal_node.cost:.3f} | "
                         f"Waypoints: {len(self.planner.final_path)}"
                     )
+                    for i, wp in enumerate(self.planner.final_path):
+                        self.get_logger().info(
+                            f"Waypoint {i:>2}: [{wp[0]:.3f}, {wp[1]:.3f}, {wp[2]:.3f}]"
+                        )
 
             if self.iteration % 50 == 0:
                 best = (
