@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import os
+import csv
 import numpy as np
 
 import rclpy
@@ -37,7 +39,8 @@ class InformedRRTStarNode(Node):
             0.03,
             self.timer_callback
         )
-
+        
+        
     def timer_callback(self):
         if not self.planning_finished:
             self.planner.expand_once()
@@ -57,6 +60,7 @@ class InformedRRTStarNode(Node):
                         self.get_logger().info(
                             f"Waypoint {i:>2}: [{wp[0]:.3f}, {wp[1]:.3f}, {wp[2]:.3f}]"
                         )
+                    self.save_waypoints_csv("informed_rrt_star")
 
             if self.iteration % 50 == 0:
                 best = (
@@ -70,6 +74,21 @@ class InformedRRTStarNode(Node):
                 )
 
         self.publish_markers()
+
+
+    def save_waypoints_csv(self, planner_tag: str) -> None:
+        output_dir = os.path.expanduser("~/term_project/waypoints")
+        os.makedirs(output_dir, exist_ok=True)
+
+        filepath = os.path.join(output_dir, f"waypoints_{planner_tag}.csv")
+
+        with open(filepath, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(["index", "x", "y", "z"])
+            for i, wp in enumerate(self.planner.final_path):
+                writer.writerow([i, round(wp[0], 4), round(wp[1], 4), round(wp[2], 4)])
+
+        self.get_logger().info(f"Waypoints saved: {filepath}")
 
     def make_point(self, position):
         point = Point()

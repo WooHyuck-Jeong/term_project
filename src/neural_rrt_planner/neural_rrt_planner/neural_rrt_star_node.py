@@ -9,6 +9,8 @@ informed_rrt_star_node.py 구조를 그대로 따르되
     3. 상태 텍스트: Neural / Random 샘플링 비율 표시
 """
 
+import os
+import csv
 import rclpy
 from rclpy.node import Node
 
@@ -67,6 +69,7 @@ class NeuralRRTStarNode(Node):
                         self.get_logger().info(
                             f"Waypoint {i:>2}: [{wp[0]:.3f}, {wp[1]:.3f}, {wp[2]:.3f}]"
                         )
+                    self.save_waypoints_csv("neural_rrt_star_v1")
 
             if self.iteration % 50 == 0:
                 best = (
@@ -80,6 +83,21 @@ class NeuralRRTStarNode(Node):
                 )
 
         self.publish_markers()
+
+
+    def save_waypoints_csv(self, planner_tag: str) -> None:
+        output_dir = os.path.expanduser("~/term_project/waypoints")
+        os.makedirs(output_dir, exist_ok=True)
+
+        filepath = os.path.join(output_dir, f"waypoints_{planner_tag}.csv")
+
+        with open(filepath, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(["index", "x", "y", "z"])
+            for i, wp in enumerate(self.planner.final_path):
+                writer.writerow([i, round(wp[0], 4), round(wp[1], 4), round(wp[2], 4)])
+
+        self.get_logger().info(f"Waypoints saved: {filepath}")
 
     # --------------------------------------------------
     # Helper
