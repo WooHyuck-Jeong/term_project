@@ -64,5 +64,6 @@ for i in range(4):
     ax[i].legend(loc= 'upper right')
 plt.tight_layout()
 # plt.show()
+
 fig.savefig("Benchmark_Compare_v2.png", dpi= 500)
 plt.close()
