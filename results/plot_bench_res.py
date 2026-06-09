@@ -50,9 +50,9 @@ informed_rrt_star.plot(kind= "line", x= "run", y= "final_nodes", title= "Final N
 neural_rrt_v1.plot(kind= "line", x= "run", y= "final_nodes", title= "Final Nodes", ax= ax[2], marker= "d", c= 'green', label= 'Neural-rrt* v1', ylim= [1700, 2100], grid= True)
 neural_rrt_v2.plot(kind= "line", x= "run", y= "final_nodes", title= "Final Nodes", ax= ax[2], marker= "o", c= 'orange', label= 'Neural-rrt* v2', ylim= [1700, 2100], grid= True)
 
-for i in range(3):
-    ax[i].legend(loc= 'upper right')
-plt.tight_layout()
-plt.show()
-# fig.savefig("Benchmark Compare.png", dpi= 500)
-# plt.close()
+# for i in range(3):
+#     ax[i].legend(loc= 'upper right')
+# plt.tight_layout()
+# plt.show()
+fig.savefig("Benchmark_Compare.png", dpi= 500)
+plt.close()
