@@ -1,0 +1,2 @@
+planner,runs,success_rate,first_path_iter_mean,first_path_iter_std,final_cost_mean,final_cost_std,final_nodes_mean,final_nodes_std,elapsed_sec_mean,elapsed_sec_std
+RRT*,10,100.0,95.4,26.6,4.6322,0.0434,1986.9,7.7,1.977,0.040

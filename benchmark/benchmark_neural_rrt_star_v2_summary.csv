@@ -1,0 +1,2 @@
+planner,runs,success_rate,first_path_iter_mean,first_path_iter_std,final_cost_mean,final_cost_std,final_nodes_mean,final_nodes_std,elapsed_sec_mean,elapsed_sec_std
+Neural RRT* v2,10,100.0,24.4,1.7,4.4921,0.0254,1996.9,2.7,14.398,0.303

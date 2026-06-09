@@ -1,0 +1,11 @@
+planner,run,first_path_iter,final_cost,final_nodes,elapsed_sec
+Neural RRT* v2,1,23,4.480534,1999,14.2219
+Neural RRT* v2,2,25,4.499763,2001,14.6537
+Neural RRT* v2,3,28,4.522602,1993,14.4997
+Neural RRT* v2,4,24,4.518295,1997,14.0603
+Neural RRT* v2,5,24,4.533876,1995,14.4880
+Neural RRT* v2,6,24,4.478508,1994,14.5841
+Neural RRT* v2,7,26,4.464604,1998,13.9739
+Neural RRT* v2,8,22,4.462416,1999,14.6864
+Neural RRT* v2,9,23,4.471845,1994,14.0183
+Neural RRT* v2,10,25,4.488506,1999,14.7912

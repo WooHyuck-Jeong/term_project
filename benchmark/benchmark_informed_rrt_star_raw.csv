@@ -1,0 +1,11 @@
+planner,run,first_path_iter,final_cost,final_nodes,elapsed_sec
+Informed RRT*,1,277,4.522091,1996,3.2592
+Informed RRT*,2,219,4.549763,1996,2.9849
+Informed RRT*,3,247,4.613948,1947,2.3267
+Informed RRT*,4,191,4.572716,1967,3.0488
+Informed RRT*,5,471,4.560467,1989,2.5174
+Informed RRT*,6,169,4.631627,1995,2.7478
+Informed RRT*,7,246,4.552063,1994,3.1616
+Informed RRT*,8,256,4.571489,1989,2.8944
+Informed RRT*,9,217,4.556147,1987,2.5358
+Informed RRT*,10,289,4.560218,1987,2.6277
