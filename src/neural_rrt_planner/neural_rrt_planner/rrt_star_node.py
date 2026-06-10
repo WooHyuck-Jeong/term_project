@@ -31,13 +31,19 @@ class RRTStarNode(Node):
         self.max_iter = MAP_CONFIG["rrt_params"]["max_iter"]
         self.planning_finished = False
 
+        # 질점 이동 관련
+        self.agent_index: int = 0
+        self.agent_moving: bool = False
+        self.agent_tick: int = 0
+        self.agent_tick_interval: int = 10  # 10틱(0.3s)마다 1 waypoint 이동
+
         self.get_logger().info("RRT* animated planning started.")
 
-        self.timer = self.create_timer(
-            0.03,
-            self.timer_callback
-        )
+        self.timer = self.create_timer(0.03, self.timer_callback)
 
+    # --------------------------------------------------
+    # Timer Callback
+    # --------------------------------------------------
     def timer_callback(self):
         if not self.planning_finished:
             self.planner.expand_once()
@@ -58,6 +64,8 @@ class RRTStarNode(Node):
                             f"Waypoint {i:>2}: [{wp[0]:.3f}, {wp[1]:.3f}, {wp[2]:.3f}]"
                         )
                     self.save_waypoints_csv("rrt_star")
+                    self.agent_moving = True
+                    self.agent_index = 0
 
             if self.iteration % 50 == 0:
                 best = (
@@ -70,9 +78,23 @@ class RRTStarNode(Node):
                     f"Best cost: {best}"
                 )
 
+        # 질점 이동 (tick 기반 속도 조절)
+        if self.agent_moving and self.planner.final_path:
+            path = self.planner.final_path
+            if self.agent_index < len(path):
+                self.agent_tick += 1
+                if self.agent_tick >= self.agent_tick_interval:
+                    self.agent_tick = 0
+                    self.agent_index += 1
+            else:
+                self.agent_moving = False
+                self.get_logger().info("Agent reached goal.")
+
         self.publish_markers()
 
-
+    # --------------------------------------------------
+    # Save Waypoints CSV
+    # --------------------------------------------------
     def save_waypoints_csv(self, planner_tag: str) -> None:
         output_dir = os.path.expanduser("~/term_project/waypoints")
         os.makedirs(output_dir, exist_ok=True)
@@ -87,6 +109,9 @@ class RRTStarNode(Node):
 
         self.get_logger().info(f"Waypoints saved: {filepath}")
 
+    # --------------------------------------------------
+    # Helper
+    # --------------------------------------------------
     def make_point(self, position):
         point = Point()
         point.x = float(position[0])
@@ -94,6 +119,9 @@ class RRTStarNode(Node):
         point.z = float(position[2])
         return point
 
+    # --------------------------------------------------
+    # Tree Marker (파란색)
+    # --------------------------------------------------
     def create_tree_marker(self, marker_id):
         marker = Marker()
         marker.header.frame_id = self.frame_id
@@ -114,16 +142,14 @@ class RRTStarNode(Node):
         for node in self.planner.nodes:
             if node.parent is None:
                 continue
-
-            marker.points.append(
-                self.make_point(node.position())
-            )
-            marker.points.append(
-                self.make_point(node.parent.position())
-            )
+            marker.points.append(self.make_point(node.position()))
+            marker.points.append(self.make_point(node.parent.position()))
 
         return marker
 
+    # --------------------------------------------------
+    # Path Marker
+    # --------------------------------------------------
     def create_path_marker(self, marker_id):
         marker = Marker()
         marker.header.frame_id = self.frame_id
@@ -142,12 +168,13 @@ class RRTStarNode(Node):
         marker.color.a = 1.0
 
         for waypoint in self.planner.final_path:
-            marker.points.append(
-                self.make_point(waypoint)
-            )
+            marker.points.append(self.make_point(waypoint))
 
         return marker
 
+    # --------------------------------------------------
+    # Sphere Marker (start / goal)
+    # --------------------------------------------------
     def create_sphere_marker(self, marker_id, position, color, ns):
         marker = Marker()
         marker.header.frame_id = self.frame_id
@@ -166,13 +193,16 @@ class RRTStarNode(Node):
         marker.scale.y = 0.12
         marker.scale.z = 0.12
 
-        marker.color.r = color[0]
-        marker.color.g = color[1]
-        marker.color.b = color[2]
-        marker.color.a = color[3]
+        marker.color.r = float(color[0])
+        marker.color.g = float(color[1])
+        marker.color.b = float(color[2])
+        marker.color.a = float(color[3])
 
         return marker
 
+    # --------------------------------------------------
+    # Obstacle Markers
+    # --------------------------------------------------
     def create_obstacle_markers(self, start_id):
         markers = []
         marker_id = start_id
@@ -208,6 +238,9 @@ class RRTStarNode(Node):
 
         return markers
 
+    # --------------------------------------------------
+    # Map Boundary Marker
+    # --------------------------------------------------
     def create_boundary_marker(self, marker_id):
         bounds = MAP_CONFIG["bounds"]
 
@@ -216,14 +249,10 @@ class RRTStarNode(Node):
         z_min, z_max = bounds["z"]
 
         corners = [
-            [x_min, y_min, z_min],
-            [x_max, y_min, z_min],
-            [x_max, y_max, z_min],
-            [x_min, y_max, z_min],
-            [x_min, y_min, z_max],
-            [x_max, y_min, z_max],
-            [x_max, y_max, z_max],
-            [x_min, y_max, z_max],
+            [x_min, y_min, z_min], [x_max, y_min, z_min],
+            [x_max, y_max, z_min], [x_min, y_max, z_min],
+            [x_min, y_min, z_max], [x_max, y_min, z_max],
+            [x_max, y_max, z_max], [x_min, y_max, z_max],
         ]
 
         edges = [
@@ -249,85 +278,70 @@ class RRTStarNode(Node):
         marker.color.a = 1.0
 
         for i, j in edges:
-            marker.points.append(
-                self.make_point(corners[i])
-            )
-            marker.points.append(
-                self.make_point(corners[j])
-            )
+            marker.points.append(self.make_point(corners[i]))
+            marker.points.append(self.make_point(corners[j]))
 
         return marker
 
-    # def create_iteration_text_marker(self, marker_id):
-    #     marker = Marker()
-    #     marker.header.frame_id = self.frame_id
-    #     marker.header.stamp = self.get_clock().now().to_msg()
-    #     marker.ns = "iteration_text"
-    #     marker.id = marker_id
-    #     marker.type = Marker.TEXT_VIEW_FACING
-    #     marker.action = Marker.ADD
+    # --------------------------------------------------
+    # Agent Marker (질점)
+    # --------------------------------------------------
+    def create_agent_marker(self, marker_id):
+        path = self.planner.final_path
+        idx = min(self.agent_index, len(path) - 1)
+        pos = path[idx]
 
-    #     marker.pose.position.x = 0.2
-    #     marker.pose.position.y = 0.1
-    #     marker.pose.position.z = 0.2
-    #     marker.pose.orientation.w = 1.0
+        marker = Marker()
+        marker.header.frame_id = self.frame_id
+        marker.header.stamp = self.get_clock().now().to_msg()
+        marker.ns = "agent"
+        marker.id = marker_id
+        marker.type = Marker.SPHERE
+        marker.action = Marker.ADD
 
-    #     marker.scale.z = 0.18
+        marker.pose.position.x = float(pos[0])
+        marker.pose.position.y = float(pos[1])
+        marker.pose.position.z = float(pos[2])
+        marker.pose.orientation.w = 1.0
 
-    #     marker.color.r = 1.0
-    #     marker.color.g = 1.0
-    #     marker.color.b = 1.0
-    #     marker.color.a = 1.0
+        marker.scale.x = 0.15
+        marker.scale.y = 0.15
+        marker.scale.z = 0.15
 
-    #     if self.planner.best_goal_node is None:
-    #         best_cost = "None"
-    #     else:
-    #         best_cost = f"{self.planner.best_goal_node.cost:.3f}"
+        marker.color.r = 1.0
+        marker.color.g = 0.5
+        marker.color.b = 0.0
+        marker.color.a = 1.0
 
-    #     marker.text = (
-    #         f"RRT* | Iter: {self.iteration} | "
-    #         f"Nodes: {len(self.planner.nodes)} | "
-    #         f"Best cost: {best_cost}"
-    #     )
+        return marker
 
-    #     return marker
-
+    # --------------------------------------------------
+    # Publish All Markers
+    # --------------------------------------------------
     def publish_markers(self):
         marker_array = MarkerArray()
         marker_id = 0
 
-        marker_array.markers.append(
-            self.create_boundary_marker(marker_id)
-        )
+        marker_array.markers.append(self.create_boundary_marker(marker_id))
         marker_id += 1
 
-        marker_array.markers.append(
-            self.create_tree_marker(marker_id)
-        )
+        marker_array.markers.append(self.create_tree_marker(marker_id))
         marker_id += 1
 
         if self.planner.final_path:
-            marker_array.markers.append(
-                self.create_path_marker(marker_id)
-            )
+            marker_array.markers.append(self.create_path_marker(marker_id))
             marker_id += 1
 
         marker_array.markers.append(
             self.create_sphere_marker(
-                marker_id,
-                MAP_CONFIG["start"],
-                [0.0, 1.0, 0.0, 1.0],
-                "start"
+                marker_id, MAP_CONFIG["start"], [0.0, 1.0, 0.0, 1.0], "start"
             )
         )
         marker_id += 1
 
         marker_array.markers.append(
             self.create_sphere_marker(
-                marker_id,
-                MAP_CONFIG["goal"],
-                [1.0, 0.0, 0.0, 1.0],
-                "goal"
+                marker_id, MAP_CONFIG["goal"], [1.0, 0.0, 0.0, 1.0], "goal"
             )
         )
         marker_id += 1
@@ -336,9 +350,10 @@ class RRTStarNode(Node):
             marker_array.markers.append(marker)
             marker_id += 1
 
-        # marker_array.markers.append(
-        #     self.create_iteration_text_marker(marker_id)
-        # )
+        # 질점 마커 — publish 전에 추가
+        if self.planner.final_path and self.agent_index > 0:
+            marker_array.markers.append(self.create_agent_marker(marker_id))
+            marker_id += 1
 
         self.marker_pub.publish(marker_array)
 
@@ -354,7 +369,6 @@ def main(args=None):
         pass
     finally:
         node.destroy_node()
-        # if rclpy.ok():
         rclpy.shutdown()
 
 
